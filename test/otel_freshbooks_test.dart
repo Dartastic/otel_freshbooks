@@ -1,0 +1,22 @@
+// Licensed under the Apache License, Version 2.0
+// Copyright 2025, Mindful Software LLC, All rights reserved.
+
+import 'package:otel_freshbooks/otel_freshbooks.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('otel_freshbooks', () {
+    test('suppression toggles in zone', () async {
+      expect(freshBooksInstrumentationSuppressed(), isFalse);
+      await runWithoutFreshBooksInstrumentationAsync(() async {
+        expect(freshBooksInstrumentationSuppressed(), isTrue);
+      });
+      expect(freshBooksInstrumentationSuppressed(), isFalse);
+    });
+
+    test('FreshBooksResult fields default null', () {
+      const r = FreshBooksResult();
+      expect(r.statusCode, isNull);
+    });
+  });
+}
