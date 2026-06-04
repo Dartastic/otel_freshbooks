@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_freshbooks_suppression.dart';
 
@@ -50,45 +49,56 @@ Future<T> tracedFreshBooks<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_freshbooks');
   final span = t.startSpan('freshbooks $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'freshbooks');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'freshbooks')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.accountId != null) {
-        span.setStringAttribute('freshbooks.account.id', res.accountId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.account.id', res.accountId!)]));
       }
       if (res.businessId != null) {
-        span.setStringAttribute('freshbooks.business.id', res.businessId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.business.id', res.businessId!)]));
       }
       if (res.clientId != null) {
-        span.setStringAttribute('freshbooks.client.id', res.clientId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.client.id', res.clientId!)]));
       }
       if (res.invoiceId != null) {
-        span.setStringAttribute('freshbooks.invoice.id', res.invoiceId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.invoice.id', res.invoiceId!)]));
       }
       if (res.projectId != null) {
-        span.setStringAttribute('freshbooks.project.id', res.projectId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.project.id', res.projectId!)]));
       }
       if (res.amount != null) {
-        span.setDoubleAttribute('freshbooks.amount', res.amount!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeDouble('freshbooks.amount', res.amount!)]));
       }
       if (res.currency != null) {
-        span.setStringAttribute('freshbooks.currency', res.currency!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.currency', res.currency!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('freshbooks.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('freshbooks.error.code', res.errorCode!)]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'freshbooks.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'freshbooks.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
