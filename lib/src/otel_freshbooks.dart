@@ -1,11 +1,12 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_freshbooks_suppression.dart';
 
 class FreshBooksResult {
+  /// Creates a result.
   const FreshBooksResult({
     this.accountId,
     this.businessId,
@@ -31,8 +32,13 @@ class FreshBooksResult {
   final String? errorMessage;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class FreshBooksCallResult<T> {
+  /// Creates a call result.
   const FreshBooksCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final FreshBooksResult? result;
 }
@@ -40,62 +46,68 @@ class FreshBooksCallResult<T> {
 Future<T> tracedFreshBooks<T>({
   required String operation,
   required Future<FreshBooksCallResult<T>> Function() invoke,
-  Tracer? tracer,
+  APITracer? tracer,
 }) async {
   if (freshBooksInstrumentationSuppressed()) {
     final r = await invoke();
     return r.value;
   }
-  final t = tracer ?? OTel.tracerProvider().getTracer('otel_freshbooks');
+  final t = tracer ?? OTelAPI.tracerProvider().getTracer('otel_freshbooks');
   final span = t.startSpan('freshbooks $operation', kind: SpanKind.client);
   try {
-    span.addAttributes(
-        OTel.attributes([OTel.attributeString('rpc.system', 'freshbooks')]));
+    span.addAttributes(OTelAPI.attributes(
+        [OTelAPI.attributeString('rpc.system', 'freshbooks')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.accountId != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.account.id', res.accountId!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('freshbooks.account.id', res.accountId!)
+        ]));
       }
       if (res.businessId != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.business.id', res.businessId!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('freshbooks.business.id', res.businessId!)
+        ]));
       }
       if (res.clientId != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.client.id', res.clientId!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('freshbooks.client.id', res.clientId!)]));
       }
       if (res.invoiceId != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.invoice.id', res.invoiceId!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('freshbooks.invoice.id', res.invoiceId!)
+        ]));
       }
       if (res.projectId != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.project.id', res.projectId!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('freshbooks.project.id', res.projectId!)
+        ]));
       }
       if (res.amount != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeDouble('freshbooks.amount', res.amount!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeDouble('freshbooks.amount', res.amount!)]));
       }
       if (res.currency != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.currency', res.currency!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('freshbooks.currency', res.currency!)]));
       }
       if (res.statusCode != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeInt('http.response.status_code', res.statusCode!)
+        ]));
       }
       if (res.errorCode != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('freshbooks.error.code', res.errorCode!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('freshbooks.error.code', res.errorCode!)
+        ]));
       }
       final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString(
-            ErrorResource.errorType.key,
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString(
+            ErrorAttributes.errorType.key,
             res.errorCode ?? 'freshbooks.error',
           )
         ]));
